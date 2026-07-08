@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Education Portal</title>
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --border-color: #D1D5DB;
+            --error-color: #DC2626;
+            --error-bg: #FEE2E2;
+            --warning-color: #D97706;
+            --warning-bg: #FEF3C7;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        /* Container & Card */
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card {
+            background-color: var(--card-bg);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem 2rem;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: var(--text-main);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background-color: var(--bg-color);
+            border-radius: 0.75rem;
+            padding: 0.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            background-color: var(--card-bg);
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Forms & Inputs */
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            color: var(--text-main);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Show/Hide Password */
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0.25rem;
+            transition: var(--transition);
+        }
+
+        .toggle-password:hover {
+            color: var(--text-main);
+        }
+
+        /* Button */
+        .submit-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Links */
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .register-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 0.875rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .alert.error {
+            background-color: var(--error-bg);
+            color: var(--error-color);
+            border: 1px solid #FECACA;
+            display: block;
+        }
+
+        .alert.warning {
+            background-color: var(--warning-bg);
+            color: var(--warning-color);
+            border: 1px solid #FDE68A;
+            display: block;
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none;
+        }
+
+        /* SVG Icons Styling */
+        svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="header">
+                <h1>Welcome Back</h1>
+                <p>Sign in to your educational account</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" id="btn-student" onclick="switchTab('student')">Student</button>
+                <button class="tab-btn" id="btn-admin" onclick="switchTab('admin')">Admin</button>
+            </div>
+
+            <!-- Student Login Form -->
+            <form id="student-form" onsubmit="handleStudentLogin(event)">
+                <div id="student-alert" class="alert"></div>
+
+                <div class="form-group">
+                    <label class="form-label" for="student-email">Email Address</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            </svg>
+                        </span>
+                        <input type="email" id="student-email" class="input-field" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="student-password">Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </span>
+                        <input type="password" id="student-password" class="input-field" placeholder="Enter your password" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword('student-password', 'student-eye-icon')">
+                            <svg id="student-eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Login as Student</button>
+
+                <div class="register-link">
+                    New Student? <a href="register.html">Register Now</a>
+                </div>
+            </form>
+
+            <!-- Admin Login Form -->
+            <form id="admin-form" class="hidden" onsubmit="handleAdminLogin(event)">
+                <div id="admin-alert" class="alert"></div>
+
+                <div class="form-group">
+                    <label class="form-label" for="admin-email">Admin Email</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                        <input type="email" id="admin-email" class="input-field" placeholder="Admin portal email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="admin-password">Admin Password</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </span>
+                        <input type="password" id="admin-password" class="input-field" placeholder="Admin password" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword('admin-password', 'admin-eye-icon')">
+                            <svg id="admin-eye-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Login as Admin</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- UI Interactions ---
+
+        // Tab Switching Logic
+        function switchTab(tab) {
+            const studentForm = document.getElementById('student-form');
+            const adminForm = document.getElementById('admin-form');
+            const btnStudent = document.getElementById('btn-student');
+            const btnAdmin = document.getElementById('btn-admin');
+            
+            // Clear alerts on switch
+            hideAlert('student-alert');
+            hideAlert('admin-alert');
+
+            if (tab === 'student') {
+                studentForm.classList.remove('hidden');
+                adminForm.classList.add('hidden');
+                btnStudent.classList.add('active');
+                btnAdmin.classList.remove('active');
+            } else {
+                adminForm.classList.remove('hidden');
+                studentForm.classList.add('hidden');
+                btnAdmin.classList.add('active');
+                btnStudent.classList.remove('active');
+            }
+        }
+
+        // Show/Hide Password Logic
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                // Eye Off SVG path
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                `;
+            } else {
+                input.type = 'password';
+                // Eye On SVG path
+                icon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                `;
+            }
+        }
+
+        // Alert Management
+        function showAlert(alertId, message, type) {
+            const alertEl = document.getElementById(alertId);
+            alertEl.textContent = message;
+            alertEl.className = 'alert ' + type;
+        }
+
+        function hideAlert(alertId) {
+            const alertEl = document.getElementById(alertId);
+            alertEl.className = 'alert hidden';
+            alertEl.textContent = '';
+        }
+
+        // --- Data Mocking (Simulating Backend for Student Logic) ---
+        // In a real application, this array would be stored in a database and fetched via API.
+        // For demonstration, we simulate fetching registered students from localStorage.
+        
+        function getRegisteredStudents() {
+            const dbStudents = localStorage.getItem('school_students');
+            if (dbStudents) {
+                return JSON.parse(dbStudents);
+            }
+            // Mock dummy data for testing UI logic
+            const mockData = [
+                { email: 'approved@student.com', password: 'password123', status: 'approved' },
+                { email: 'pending@student.com', password: 'password123', status: 'pending' }
+            ];
+            localStorage.setItem('school_students', JSON.stringify(mockData));
+            return mockData;
+        }
+
+        // --- Login Handlers ---
+
+        function handleStudentLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('student-email').value.trim();
+            const password = document.getElementById('student-password').value;
+            const alertId = 'student-alert';
+
+            hideAlert(alertId);
+
+            // Fetch students list
+            const students = getRegisteredStudents();
+            
+            // Check if student exists
+            const student = students.find(s => s.email === email);
+
+            if (!student) {
+                showAlert(alertId, 'Invalid email or password. Are you registered?', 'error');
+                return;
+            }
+
+            if (student.password !== password) {
+                showAlert(alertId, 'Invalid email or password.', 'error');
+                return;
+            }
+
+            // Verify Admin Approval Status
+            if (student.status === 'pending') {
+                showAlert(alertId, 'Your registration is under review. Please wait for Admin approval.', 'warning');
+                return;
+            } else if (student.status !== 'approved') {
+                showAlert(alertId, 'Your account is not active. Please contact support.', 'error');
+                return;
+            }
+
+            // Successful Student Login
+            // Redirect to index.html as per instructions
+            window.location.href = 'index.html';
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value;
+            const alertId = 'admin-alert';
+
+            hideAlert(alertId);
+
+            /* * IMPORTANT: Do NOT hardcode actual admin credentials here in production.
+             * This space is designed for the application owner to implement proper backend 
+             * authentication logic or environment variables.
+             */
+             
+            // PLACEHOLDERS - Owner to configure real authentication logic
+            const ADMIN_EMAIL_PLACEHOLDER = "admin@system.com"; 
+            const ADMIN_PASSWORD_PLACEHOLDER = "admin123";
+
+            // Simulated Check
+            if (email === ADMIN_EMAIL_PLACEHOLDER && password === ADMIN_PASSWORD_PLACEHOLDER) {
+                // Successful Admin Login
+                // Redirect to admin dashboard as per instructions
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                showAlert(alertId, 'Invalid Admin Credentials.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
