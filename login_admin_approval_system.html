@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Polytechnic Hub - Authentication & Approvals</title>
+    <style>
+        /* =========================================================
+           CORE VARIABLES & RESET
+           ========================================================= */
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --success: #10B981;
+            --success-hover: #059669;
+            --danger: #EF4444;
+            --danger-hover: #DC2626;
+            --warning: #F59E0B;
+            
+            --bg-main: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 10px 25px -5px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Utility Classes */
+        .hidden { display: none !important; }
+
+        /* =========================================================
+           1. LOGIN UI COMPONENTS
+           ========================================================= */
+        #auth-view {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 32px 24px;
+            margin: 20px;
+            position: relative;
+            z-index: 10;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-header { text-align: center; margin-bottom: 24px; }
+        .auth-header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+        .auth-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .auth-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+        .tab-btn {
+            flex: 1; padding: 12px 0; background: transparent; border: none;
+            border-bottom: 3px solid transparent; color: var(--text-muted);
+            font-weight: 600; font-size: 1rem; cursor: pointer; transition: var(--transition);
+        }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .input-group { margin-bottom: 16px; position: relative; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; }
+        .input-field {
+            width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
+            border-radius: var(--radius-md); outline: none; background: #F8FAFC;
+            font-size: 0.95rem; color: var(--text-dark); transition: var(--transition);
+        }
+        .input-field:focus { border-color: var(--primary); background: #FFF; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        .toggle-password {
+            position: absolute; right: 14px; bottom: 12px; background: none;
+            border: none; color: var(--text-muted); cursor: pointer;
+        }
+        .toggle-password svg { width: 20px; height: 20px; }
+
+        .btn-submit {
+            width: 100%; padding: 14px; background: var(--primary); color: white;
+            border: none; border-radius: var(--radius-md); font-weight: 600; font-size: 1rem;
+            cursor: pointer; transition: var(--transition); margin-top: 10px;
+        }
+        .btn-submit:active { transform: scale(0.98); background: var(--primary-hover); }
+
+        .alert-box {
+            padding: 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+            margin-bottom: 16px; display: none; text-align: center;
+        }
+        .alert-error { background: #FEE2E2; color: var(--danger); border: 1px solid #FCA5A5; }
+        .alert-warning { background: #FEF3C7; color: #B45309; border: 1px solid #FCD34D; }
+        .alert-success { background: #D1FAE5; color: var(--success); border: 1px solid #6EE7B7; }
+
+        .register-link { text-align: center; margin-top: 20px; font-size: 0.95rem; color: var(--text-muted); }
+        .register-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+
+        /* =========================================================
+           2. ADMIN APPROVAL PORTAL UI COMPONENTS
+           ========================================================= */
+        #admin-view {
+            width: 100%; height: 100%; background: var(--bg-main);
+            display: flex; flex-direction: column; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease; position: absolute; top: 0; left: 0;
+            z-index: 5;
+        }
+        #admin-view.active { opacity: 1; visibility: visible; z-index: 20; }
+
+        .admin-header {
+            background: var(--card-bg); height: 72px; display: flex;
+            align-items: center; justify-content: space-between; padding: 0 24px;
+            box-shadow: var(--shadow-sm); z-index: 10;
+        }
+        .admin-header h1 { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        
+        .btn-logout {
+            background: #FEE2E2; color: var(--danger); padding: 8px 16px;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            transition: var(--transition);
+        }
+        .btn-logout:hover { background: var(--danger); color: white; }
+
+        .admin-content { flex: 1; padding: 24px; overflow-y: auto; }
+        
+        .summary-cards {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin-bottom: 24px;
+        }
+        .summary-card {
+            background: var(--card-bg); padding: 20px; border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
+        }
+        .summary-card .label { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+        .summary-card .value { font-size: 2rem; font-weight: 700; color: var(--text-dark); }
+
+        .panel-card {
+            background: var(--card-bg); border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md); overflow: hidden; margin-bottom: 24px;
+        }
+        
+        .panel-header {
+            display: flex; gap: 10px; border-bottom: 1px solid var(--border-color);
+            background: #F8FAFC; padding: 0 20px;
+        }
+        .panel-tab {
+            padding: 16px 20px; background: none; border: none; font-weight: 600;
+            color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent;
+            font-size: 1rem; transition: var(--transition);
+        }
+        .panel-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .table-container { overflow-x: auto; padding: 20px; min-height: 300px;}
+        
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+        td { font-size: 0.95rem; }
+
+        /* Labels for statuses */
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .bg-pending { background: #FEF3C7; color: #B45309; }
+        .bg-approved { background: #D1FAE5; color: #065F46; }
+        .bg-rejected { background: #FEE2E2; color: #991B1B; }
+
+        /* Action Buttons */
+        .btn-sm { padding: 6px 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-right: 6px; transition: var(--transition); }
+        .btn-approve { background: var(--success); color: white; }
+        .btn-approve:hover { background: var(--success-hover); }
+        .btn-reject { background: var(--danger); color: white; }
+        .btn-reject:hover { background: var(--danger-hover); }
+        
+        /* The Empty State (Crucial since there's NO fake data) */
+        .empty-state {
+            padding: 60px 20px; text-align: center; color: var(--text-muted);
+            background: #F8FAFC; border: 2px dashed var(--border-color); border-radius: var(--radius-md);
+            margin: 20px 0;
+        }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.5; }
+        .empty-state h3 { font-size: 1.2rem; color: var(--text-dark); margin-bottom: 8px; }
+        .empty-state p { font-size: 0.95rem; line-height: 1.5; }
+
+        /* Responsive Mobile specific */
+        @media (max-width: 768px) {
+            .summary-cards { grid-template-columns: 1fr; }
+            .panel-header { overflow-x: auto; white-space: nowrap; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =========================================================
+         VIEW 1: LOGIN PORTAL
+         ========================================================= -->
+    <div id="auth-view">
+        <div class="auth-header">
+            <h1>Login Portal</h1>
+            <p>Polytechnic Hub</p>
+        </div>
+
+        <div class="auth-tabs">
+            <button class="tab-btn active" onclick="switchLoginTab('student')">Student</button>
+            <button class="tab-btn" onclick="switchLoginTab('admin')">Admin</button>
+        </div>
+
+        <!-- Student Login Form -->
+        <form id="student-form" onsubmit="handleStudentLogin(event)">
+            <div id="student-alert" class="alert-box"></div>
+            
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="studentEmail" class="input-field" placeholder="Registered email" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="studentPassword" class="input-field" placeholder="Your password" required>
+                <button type="button" class="toggle-password" onclick="togglePassword('studentPassword', 'eyeStudent')">
+                    <svg id="eyeStudent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </button>
+            </div>
+            
+            <button type="submit" class="btn-submit">Login as Student</button>
+            
+            <div class="register-link">
+                New Student? <a href="register.html">Register Now</a>
+            </div>
+        </form>
+
+        <!-- Admin Login Form -->
+        <form id="admin-form" class="hidden" onsubmit="handleAdminLogin(event)">
+            <div id="admin-alert" class="alert-box"></div>
+            
+            <div class="input-group">
+                <label>Admin Email</label>
+                <!-- ADMIN EMAIL PLACEHOLDER -->
+                <input type="email" id="adminEmail" class="input-field" placeholder="Admin email" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Admin Password</label>
+                <!-- ADMIN PASSWORD PLACEHOLDER -->
+                <input type="password" id="adminPassword" class="input-field" placeholder="Admin password" required>
+                <button type="button" class="toggle-password" onclick="togglePassword('adminPassword', 'eyeAdmin')">
+                    <svg id="eyeAdmin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </button>
+            </div>
+            
+            <button type="submit" class="btn-submit">Open Approval Portal</button>
+        </form>
+    </div>
+
+    <!-- =========================================================
+         VIEW 2: ADMIN STUDENT APPROVAL PORTAL
+         ========================================================= -->
+    <div id="admin-view">
+        <header class="admin-header">
+            <h1>Student Approval Portal</h1>
+            <button class="btn-logout" onclick="logoutAdmin()">Logout</button>
+        </header>
+
+        <main class="admin-content">
+            <!-- Dynamic Stats Summary -->
+            <div class="summary-cards">
+                <div class="summary-card" style="border-left: 4px solid var(--warning);">
+                    <div class="label">Pending Requests</div>
+                    <div class="value" id="countPending">0</div>
+                </div>
+                <div class="summary-card" style="border-left: 4px solid var(--success);">
+                    <div class="label">Approved Students</div>
+                    <div class="value" id="countApproved">0</div>
+                </div>
+                <div class="summary-card" style="border-left: 4px solid var(--danger);">
+                    <div class="label">Rejected Registrations</div>
+                    <div class="value" id="countRejected">0</div>
+                </div>
+            </div>
+
+            <div class="panel-card">
+                <div class="panel-header">
+                    <button class="panel-tab active" onclick="switchTableTab('pending')">Pending Approvals</button>
+                    <button class="panel-tab" onclick="switchTableTab('approved')">Approved</button>
+                    <button class="panel-tab" onclick="switchTableTab('rejected')">Rejected</button>
+                </div>
+
+                <div class="table-container">
+                    
+                    <!-- MASTER TABLE STRUCTURE -->
+                    <table id="dataTable" class="hidden">
+                        <thead>
+                            <tr>
+                                <th>Student Details</th>
+                                <th>Course & Sem</th>
+                                <th>Contact Info</th>
+                                <th>State</th>
+                                <th>Status</th>
+                                <th id="actionColumnHeader">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be injected here dynamically -->
+                        </tbody>
+                    </table>
+
+                    <!-- EMPTY STATE (Shows when NO real data exists from register.html) -->
+                    <div id="emptyStateDisplay" class="empty-state">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <h3>Awaiting Real Registration Data</h3>
+                        <p>No records found in the database. <br>Once a student registers from <b>register.html</b>, their details will automatically appear here for your review.</p>
+                    </div>
+
+                    <!-- TEMPLATE: Row Design for Dynamic Injection (NO FAKE DATA) -->
+                    <template id="studentRowTemplate">
+                        <tr>
+                            <td>
+                                <div style="font-weight:700; color:var(--text-dark);" class="td-name">[Name]</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);" class="td-date">[Reg Date]</div>
+                            </td>
+                            <td>
+                                <div class="td-course">[Course]</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);" class="td-sem">Sem: [Semester]</div>
+                            </td>
+                            <td>
+                                <div class="td-phone">[Phone]</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);" class="td-email">[Email]</div>
+                            </td>
+                            <td class="td-state">[State]</td>
+                            <td><span class="status-badge td-status">[Status]</span></td>
+                            <td class="td-actions">
+                                <!-- Actions populated dynamically based on status -->
+                            </td>
+                        </tr>
+                    </template>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- =========================================================
+         JAVASCRIPT LOGIC 
+         (Handles strict flow: Register -> Pending -> Approve -> Login)
+         ========================================================= -->
+    <script>
+        /* * DATA LAYER (Simulating Backend Integration)
+         * - In production, replace `localStorage` with `fetch('/api/students')`.
+         * - Zero fake records are initialized here.
+         */
+        const DB_KEY = 'polytechnic_live_students';
+        let currentAdminTab = 'pending';
+
+        // --- 1. Login UI Interactions ---
+        function switchLoginTab(type) {
+            document.getElementById('student-form').classList.add('hidden');
+            document.getElementById('admin-form').classList.add('hidden');
+            
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if (type === 'student') {
+                document.getElementById('student-form').classList.remove('hidden');
+                btns[0].classList.add('active');
+            } else {
+                document.getElementById('admin-form').classList.remove('hidden');
+                btns[1].classList.add('active');
+            }
+            
+            document.getElementById('student-alert').style.display = 'none';
+            document.getElementById('admin-alert').style.display = 'none';
+        }
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
+            } else {
+                input.type = 'password';
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
+            }
+        }
+
+        function showAlert(id, msg, type) {
+            const box = document.getElementById(id);
+            box.textContent = msg;
+            box.className = 'alert-box alert-' + type;
+            box.style.display = 'block';
+        }
+
+        // --- 2. Authentication Logic ---
+        
+        // STUDENT LOGIN: Strictly respects approval status
+        function handleStudentLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('studentEmail').value.trim();
+            const pass = document.getElementById('studentPassword').value;
+            const alertId = 'student-alert';
+
+            // Fetch live data generated by register.html
+            const students = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            const student = students.find(s => s.email === email);
+
+            if (!student) {
+                showAlert(alertId, 'Email not found. Are you registered?', 'error');
+                return;
+            }
+
+            if (student.password !== pass) {
+                showAlert(alertId, 'Incorrect Password.', 'error');
+                return;
+            }
+
+            // CRITICAL: Status Verification
+            if (student.status === 'pending') {
+                showAlert(alertId, 'Your account is waiting for Admin Approval. Please contact Admin through WhatsApp.', 'warning');
+                return;
+            }
+
+            if (student.status === 'rejected') {
+                showAlert(alertId, 'Your registration request has been rejected by the Administrator.', 'error');
+                return;
+            }
+
+            // Success (Status is 'approved')
+            window.location.href = 'index.html';
+        }
+
+        // ADMIN LOGIN: Opens Approval Dashboard
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value.trim();
+            const pass = document.getElementById('adminPassword').value;
+
+            // ADMIN CREDENTIALS PLACEHOLDER (Do not hardcode real ones)
+            const ADMIN_EMAIL = "admin@polytechnichub.com"; // ADMIN EMAIL HERE
+            const ADMIN_PASS = "admin123";                  // ADMIN PASSWORD HERE
+
+            if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
+                // Open Admin Portal
+                document.getElementById('auth-view').classList.add('hidden');
+                document.getElementById('admin-view').classList.add('active');
+                loadAdminDashboard();
+            } else {
+                showAlert('admin-alert', 'Invalid Admin Credentials.', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            document.getElementById('admin-view').classList.remove('active');
+            document.getElementById('auth-view').classList.remove('hidden');
+            document.getElementById('admin-form').reset();
+        }
+
+        // --- 3. Admin Dashboard Logic (Dynamic Rendering) ---
+
+        function switchTableTab(status) {
+            currentAdminTab = status;
+            
+            // Update Tab UI
+            document.querySelectorAll('.panel-tab').forEach(tab => tab.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Re-render table based on status
+            renderTableData();
+        }
+
+        function loadAdminDashboard() {
+            // Refresh stats and load the default 'pending' table
+            updateStats();
+            renderTableData();
+        }
+
+        function updateStats() {
+            const students = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            
+            let pending = 0, approved = 0, rejected = 0;
+            students.forEach(s => {
+                if(s.status === 'pending') pending++;
+                if(s.status === 'approved') approved++;
+                if(s.status === 'rejected') rejected++;
+            });
+
+            document.getElementById('countPending').textContent = pending;
+            document.getElementById('countApproved').textContent = approved;
+            document.getElementById('countRejected').textContent = rejected;
+        }
+
+        function renderTableData() {
+            const students = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            const filteredStudents = students.filter(s => s.status === currentAdminTab);
+            
+            const tbody = document.getElementById('tableBody');
+            const table = document.getElementById('dataTable');
+            const emptyState = document.getElementById('emptyStateDisplay');
+            const template = document.getElementById('studentRowTemplate');
+            const actionHeader = document.getElementById('actionColumnHeader');
+            
+            tbody.innerHTML = ''; // Clear previous data
+
+            // Check if REAL data exists
+            if (filteredStudents.length === 0) {
+                table.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                
+                // Customize empty state message based on tab
+                const h3 = emptyState.querySelector('h3');
+                if(currentAdminTab === 'pending') h3.textContent = "No Pending Registrations";
+                if(currentAdminTab === 'approved') h3.textContent = "No Approved Students Yet";
+                if(currentAdminTab === 'rejected') h3.textContent = "No Rejected Registrations";
+                return;
+            }
+
+            // Real data exists -> Hide empty state, show table
+            emptyState.classList.add('hidden');
+            table.classList.remove('hidden');
+            actionHeader.style.display = (currentAdminTab === 'pending') ? 'table-cell' : 'none';
+
+            // Populate from DB (localStorage mock)
+            filteredStudents.forEach(student => {
+                const clone = template.content.cloneNode(true);
+                
+                // Map Data
+                clone.querySelector('.td-name').textContent = student.fullName || 'N/A';
+                clone.querySelector('.td-date').textContent = student.regDate || 'Date Not Available';
+                clone.querySelector('.td-course').textContent = student.course || 'N/A';
+                clone.querySelector('.td-sem').textContent = `Sem: ${student.semester || 'N/A'}`;
+                clone.querySelector('.td-phone').textContent = student.mobile || 'N/A';
+                clone.querySelector('.td-email').textContent = student.email || 'N/A';
+                clone.querySelector('.td-state').textContent = student.state || 'N/A';
+                
+                // Map Status Badge
+                const badge = clone.querySelector('.td-status');
+                badge.textContent = student.status.toUpperCase();
+                badge.classList.add('bg-' + student.status);
+
+                // Map Actions (Only show Approve/Reject in Pending tab)
+                const actionCell = clone.querySelector('.td-actions');
+                if (currentAdminTab === 'pending') {
+                    const btnApprove = document.createElement('button');
+                    btnApprove.className = 'btn-sm btn-approve';
+                    btnApprove.textContent = 'Approve';
+                    btnApprove.onclick = () => updateStudentStatus(student.email, 'approved');
+
+                    const btnReject = document.createElement('button');
+                    btnReject.className = 'btn-sm btn-reject';
+                    btnReject.textContent = 'Reject';
+                    btnReject.onclick = () => updateStudentStatus(student.email, 'rejected');
+
+                    actionCell.appendChild(btnApprove);
+                    actionCell.appendChild(btnReject);
+                } else {
+                    actionCell.style.display = 'none'; // Hide cell content
+                }
+                
+                tbody.appendChild(clone);
+            });
+        }
+
+        function updateStudentStatus(email, newStatus) {
+            // Connects to DB to update status
+            let students = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            let index = students.findIndex(s => s.email === email);
+            
+            if (index !== -1) {
+                students[index].status = newStatus;
+                localStorage.setItem(DB_KEY, JSON.stringify(students));
+                
+                // Refresh Admin UI
+                updateStats();
+                renderTableData();
+            }
+        }
+    </script>
+</body>
+</html>
